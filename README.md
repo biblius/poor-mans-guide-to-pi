@@ -120,7 +120,7 @@ This is up to you and what you will be doing with your pie, but the regular port
 
 We'll use node, but using any executable works.
 
-First things first we'll define a simple server that logs when it gets a request and returns 'Hello World'
+First things first we'll define a simple server in `/var/www/myapp/app.js` that logs when it gets a request and returns 'Hello World'
 
 ```javascript
 #!/usr/bin/env node
@@ -173,19 +173,19 @@ WantedBy=multi-user.target
 Start it with 
 
 ```bash
-systemctl start myapp
+systemctl start myapp.service
 ```
 
 Enable it to run on boot with 
 
 ```bash
-systemctl enable myapp
+systemctl enable myapp.service
 ```
 
 See logs with 
 
 ```bash
-journalctl -u myapp
+journalctl -u myapp.service
 ```
 
 Now we can use the pie while the server runs.
