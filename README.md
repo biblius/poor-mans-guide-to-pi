@@ -38,7 +38,7 @@ where X is the letter of your SD card.
 
 ## Networking
 
-Plug the SD card into the pi and plug the pi to your pc or a phone charger via USB. Connect the pi to the router using a LAN cable.
+Plug the SD card into the pie and plug the pie to your pc or a phone charger via USB. Connect the pie to the router using a LAN cable.
 
 Use 
 
@@ -46,11 +46,11 @@ Use
 
 to check your IP address and 
 
-`nmap -p <YOUR_IP>/24`
+`nmap -p 22 <YOUR_IP>/24`
 
-to scan for connected devices. The orange should be a device whose ssh port is open.
+to scan for connected devices. 22 is the default port for SSH. The orange should be a device whose ssh port is open.
 
-Once you've found your pi's IP, execute
+Once you've found your pie's IP, execute
 
 ```bash
 ssh root@<IP>
@@ -76,7 +76,7 @@ Run
 ping <YOUR_NEW_STATIC_IP>
 ```
 
-to check whether your new pi has been given the static IP you entered.
+to check whether your new pie has been given the static IP you entered.
 
 ### Setting up Cloudflare and the domain
 
