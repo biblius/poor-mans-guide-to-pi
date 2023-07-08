@@ -158,7 +158,7 @@ Description=My app
 [Service]
 ExecStart=/var/www/myapp/app.js
 Restart=always
-User=nobody
+User=root
 # Note Debian/Ubuntu uses 'nogroup', RHEL/Fedora uses 'nobody'
 Group=nogroup
 Environment=PATH=/usr/bin:/usr/local/bin
