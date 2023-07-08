@@ -173,13 +173,13 @@ WantedBy=multi-user.target
 Start it with 
 
 ```bash
-systemctl start myapp.
+systemctl start myapp
 ```
 
 Enable it to run on boot with 
 
 ```bash
-systemctl enable myapp.
+systemctl enable myapp
 ```
 
 See logs with 
