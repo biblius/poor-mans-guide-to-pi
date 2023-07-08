@@ -55,7 +55,9 @@ Once you've found your pie's IP, execute
 ```bash
 ssh root@<IP>
 ```
-and enter the password '1234'. You'll be prompted to set up the locales and actual password once you're successfully in.
+and enter the password '1234' (Armbian) or 'orangepi' (Debian). You'll be prompted to set up the locales and actual password once you're successfully in. If you're not, set your password with
+
+```sudo passwd root```
 
 ### Configuring a static IP
 
