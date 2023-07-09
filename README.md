@@ -1,6 +1,10 @@
 # Poor man's guide to Orange PI
 
-Useful stuff for when just starting out with orange pies (zero 2). Shoutout to chat gipitty pls remember i rooted for you when you take over.
+Useful stuff for when just starting out with orange pies (zero 2).
+
+Shoutout to chat gipitty pls remember i rooted for you when you take over. 
+
+Shoutout to Tom. Tom's a genius.
 
 ## Setup
 
@@ -194,9 +198,70 @@ Now we can use the pie while the server runs.
 
 The final step is to upgrade our server to HTTPS. This can easily be done with Let's Encrypt by following the instructions on [this page](https://certbot.eff.org/instructions?ws=other&os=debianbuster).
 Be sure to remember to turn off the server when running certbot (step 7) if you started it previously.
-Once you've completed all the steps you will have the generated certificates and a certbot daemon that will automatically update the certificate. Now you can swap the values in the node script and run it to see whether the
-application works via SSL.
+Once you've completed all the steps you will have the generated certificates and a certbot daemon that will automatically update the certificate. We can see all the stuff certbot generated at `/etc/letsencrypt/live`.
+Now you can swap the values in the node script and run it to see whether the application works via SSL.
 
-## Transfering files to the pie
+## Creating an API gateway with Nginx
+
+The above procedure works for a dummy app and testing our initial setup, but it would quickly get out of hand if we were to take that approach for everything we are planning on exposing through our pie. Instead, we will set up an Nginx server and reverse proxy everything through it. Nginx will be the entry point for our pie and will route requests to services running locally on our pie depending on how we configure it. This provides us with the benefit of having a single service which we can utilise to reduce all the treachery associated with SSL and setting up other services.
+
+To begin, execute
+
+```bash
+apt install nginx
+```
+
+to get nginx up and running. We can check its status with
+
+```bash
+systemctl status nginx.service
+```
+
+and ensure it always starts alongside the orange with
+
+```bash
+systemctl enable nginx.service
+```
+
+Next up we'll set up a config file in `/etc/nginx/sites-enabled/hello.vhost` to route outside requests to our `hello` app:
+
+```nginx
+server {  
+
+        server_name wickedawesomesite.com;
+        location / {
+                proxy_pass http://localhost:8000/;
+                proxy_set_header Host $host;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Scheme $scheme;
+	}
+}
+
+```
+
+Notice how the [proxy_pass](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) points to `localhost:8000`. We will have to expose our app on that, so we can now use `http` and set our host and port to whatever is in the `proxy_pass`. Since we are using `http`, we no longer have to handle certificates directly in our application, Nginx (with the help of certbot) will do this for us. If you want/need that extra security inside the actual server you can play around with self signed certificates.
+
+Next, we'll set up a certbot extension to handle SSL for all of our nginx sites.
+
+```bash
+apt install python-certbot-nginx
+```
+
+and run it with
+
+```bash
+certbot
+```
+
+The certbot works by scanning the `/etc/nginx/sites-enabled` directory for any configuration files with the `server` directive. For every server it will give us the option to activate HTTPS for it. It prints out the instructions, so we can just follow those. If we now look at the Nginx config files, we can see certbot did its magic and added directives to make sure our server listens on port 443 (the default HTTPS port) and redirects any attempt to access the server via HTTP (port 80) to the HTTPS scheme.
+
+We now have a secure proxy that is essentially an API gateway for our server that we can use to expose anything we want. Neat!
+
+## Useful misc stuff
+
+### Transfering files to the pie
 
 `scp /path/to/local/file user@<PIE_IP>:/path/to/file`
