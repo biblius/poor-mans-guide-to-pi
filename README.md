@@ -63,7 +63,7 @@ and enter the password '1234' (Armbian) or 'orangepi' (Debian). You'll be prompt
 
 ```sudo passwd root```
 
-### Configuring a static IP
+### Configuring a static local IP
 
 Use `nmtui` to open up the network manager. From there you can `Add connection` and add a WIFI connection if you want.
 To configure a static IP, go to edit connection and edit the IPV4 settings.
@@ -108,17 +108,28 @@ In the DNS settings in Cloudflare, add the following records:
 |CNAME|wickedawesomesite.com|ddns.wickedawesomesite.com|DNS Only|Auto|
 |CNAME|www|ddns.wickedawesomesite.com|DNS Only|Auto|
 
-Following the previous steps in [configuring IP](#configuring-a-static-ip) we have configured our pie's *local* IP to be static, meaning our router now knows the pie will always be located on that address which will be important for [port forwarding](#port-forwarding-to-the-pie). The IP that will identify your router to the outside world will change based on your ISP. This poses a problem since the record we use on cloudflare will constantly change and get invalidated as soon as our router gets assigned a new IP address.
+Following the previous steps in [configuring IP](#configuring-a-static-local-ip) we have configured our pie's *local* IP to be static, meaning our router now knows the pie will always be located on that address which will be important for [port forwarding](#port-forwarding-to-the-pie). The IP that will identify our router to the outside world will change based on our ISP. This poses a problem since the record we use on cloudflare will constantly change and get invalidated as soon as our router gets assigned a new IP address.
 
-This can be avoided by having a static IP address, but those cost money. Since we are poor, we use a single A record with ddns as its name and create all our desired domains using a CNAME record that points to the ddns record.
+This can be avoided by having a static IP address, but those cost money. Since we are poor, we must configure [DDNS](https://en.wikipedia.org/wiki/Dynamic_DNS). 
+We use a single A record with ddns as its name and create all our desired domains using a CNAME record that points to the ddns record.
 This will allow us to use [this script](https://git.tomislav-kopic.from.hr/tomislav/ToolBox/src/master/cloudflare-ddns.sh) to dynamically adjust our IP address as soon as we notice it changed.
 Basically the script will execute `curl ifconfig.me` and compare the IP to the one registered on Cloudflare via their API. If the IPs differ, the script will call the API with the newly obtained IP address and will update the entry to point to the new IP.
 All you need to do is change the values in the script to your own and add the script to a cronjob that fires every minute (or however frequent you want). Neat!
 
+***Do note that you might have to call your ISP to disable NAT for your router***
+
+Your ISP probably has your router behind a NAT to reduce the amount of public IPs they have to issue and to hide the IP of your router from the public internet. When we execute `curl ifconfig.me` and are behind a NAT, we are actually obtaining the IP address of the NAT router which is no bueno for our purposes. Communication through a NAT must come from the private network side in order to establish proper translation entries. Whenever we make an outgoing request this is exactly what happens, however we now need a way to let incoming requests hit our router. This cannot be done when our router is behind a NAT because the router's IP is hidden from the public, there's no way for the outside to know which private IP of the NAT router to route the request to. When we ask our ISP to disable NAT, we are actually getting a public IP address that is tied directly to our router. When we are not behind a NAT, `curl ifconfig.me` will return the IP of the router. One way to check if we are behind a NAT is to execute 
+
+```bash
+mtr wickedawesomesite.com 
+```
+
+and check the number of hops it takes to reach the pie. If there is more than 1 hop, we are behind a NAT.
+
 ### Port forwarding to the pie
 
 This is simply a matter of entering the router's GUI via the browser, going to the portforwarding section, and adjusting the values to point to the pie as seen locally by your router.
-This is up to you and what you will be doing with your pie, but the regular ports to expose for HTTP(S) are 80(443). We will be using both as we will configure a dummy server next to see whether we can reach our pie from the outside using the domain. Additionally, we will [secure it with SSL](#securing-with-ssl).
+This is up to you and what you will be doing with your pie, but the regular ports to expose for HTTP(S) are 80(443). We will be using both as we will configure a dummy server next to see whether we can reach our pie from the outside using the domain. Additionally, we will [secure it with SSL](#securing-with-ssl). 
 
 ## Running a server daemon
 
