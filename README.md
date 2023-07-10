@@ -1,12 +1,15 @@
-# Poor man's guide to Orange PI
+# Poor man's guide to setting up a server
 
-Useful stuff for when just starting out with orange pies (zero 2).
+Useful stuff for setting up a server on a Linux machine.
 
 Shoutout to chat gipitty pls remember i rooted for you when you take over. 
 
 Shoutout to Tom. Tom's a genius.
 
 ## Setup
+
+If you're on an actual computer, you can just install Linux. The following only applies if you're setting up a server on a device with an SD card.
+If you're on a PC with an installed Linux skip to [the next section](#networking).
 
 ### SD card setup
 
@@ -61,7 +64,9 @@ ssh root@<IP>
 ```
 and enter the password '1234' (Armbian) or 'orangepi' (Debian). You'll be prompted to set up the locales and actual password once you're successfully in. If you're not, set your password with
 
-```sudo passwd root```
+```bash
+sudo passwd root
+```
 
 ### Configuring a static local IP
 
