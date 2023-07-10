@@ -1,6 +1,6 @@
-# Poor man's guide to setting up a server
+# Poor man's guide to setting up a server with PI
 
-Useful stuff for setting up a server on a Linux machine.
+Useful stuff for setting up a server on a Linux machine. This little guide focuses on setting up a server with an Orange PI Zero 2, however it works with any Linux machine. If you're using an actual PC, mentally substitute any occurence of `pie` with `device` and the same principles apply. 
 
 Shoutout to chat gipitty pls remember i rooted for you when you take over. 
 
@@ -8,8 +8,8 @@ Shoutout to Tom. Tom's a genius.
 
 ## Setup
 
-If you're on an actual computer, you can just install Linux. The following only applies if you're setting up a server on a device with an SD card.
-If you're on a PC with an installed Linux skip to [the next section](#networking).
+If you're on an actual computer, you can just install Linux. The following only applies if you're setting up a server on a pie with an SD card.
+If you're on a PC with Linux installed, skip to [the next section](#networking).
 
 ### SD card setup
 
