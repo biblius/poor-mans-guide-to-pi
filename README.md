@@ -43,9 +43,9 @@ xzcat path/to/file.img.xz | sudo dd of=/dev/sdX status=progress bs=1M conv=fsync
 
 where X is the letter of your SD card.
 
-## Networking
+Plug the SD card into the pie and power up the pie via pc or a phone charger. Connect the pie to the router using a LAN cable.
 
-Plug the SD card into the pie and plug the pie to your pc or a phone charger via USB. Connect the pie to the router using a LAN cable.
+## Networking
 
 Use 
 
