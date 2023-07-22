@@ -140,7 +140,9 @@ This is up to you and what you will be doing with your pie, but the regular port
 
 We'll use node, but using any executable works.
 
-First things first we'll define a simple server in `/var/www/myapp/app.js` that logs when it gets a request and returns 'Hello World'
+First things first, follow [these instructions to set up the latest version of node](https://github.com/nodesource/distributions#debinstall).
+
+Next, we'll define a simple server in `/var/www/myapp/app.js` that logs when it gets a request and returns 'Hello World'
 
 ```javascript
 #!/usr/bin/env node
