@@ -123,3 +123,5 @@ sudo apt install gcc-aarch64-linux-gnu
 ```
 
 Now everything should compile and should live happily ever after.
+
+To minimize the size of the binary, [follow this excellent guide](https://github.com/johnthagen/min-sized-rust).
