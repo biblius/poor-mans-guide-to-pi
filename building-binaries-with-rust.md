@@ -6,7 +6,7 @@ Let's imagine you need a simple CLI tool for your PI. You found no solution that
 
 ## Adding targets to the toolchain
 
-For rustc to be able to compile your code for a specific architecutre, it must be present in the toolchain. [You can find a list of available targets here](https://doc.rust-lang.org/nightly/rustc/platform-support.html). The esoteric targets are known as target triplets (even though they have 4 items!!!) and their format is always `architecture-vendor-os-abi`. Choosing which will depend on the machine in question and its OS.
+For the crab compiler to be able to compile your code for a specific architecutre, it must be present in the toolchain. [You can find a list of available targets here](https://doc.rust-lang.org/nightly/rustc/platform-support.html). The esoteric targets are known as target triplets (even though they have 4 items!!!) and their format is always `architecture-vendor-os-abi`. Choosing which will depend on the machine in question and its OS.
 
 Adding the target is as simple as
 
@@ -22,7 +22,7 @@ cargo build --release --target=aarch64-unknown-linux-musl
 
 - Note: Before you do this, read until the end to set up the appropriate linker.
 
-For the Orange PI Zero 2, you'll be selecting an `aarch64-unknown-linux` target, but which one will depend on the OS on the pie. [rustc links libraries dynamically by default](https://doc.rust-lang.org/reference/linkage.html#static-and-dynamic-c-runtimes) so you're going to need to investigate whether your pie has them. When you compile the binary, you can inspect its headers by using
+For the Orange PI Zero 2, you'll be selecting an `aarch64-unknown-linux` target, but which one will depend on the OS on the pie. [The crab compiler links libraries dynamically by default](https://doc.rust-lang.org/reference/linkage.html#static-and-dynamic-c-runtimes) so you're going to need to investigate whether your pie has them (or just compile statically). When you compile the binary, you can inspect its headers by using
 
 ```bash
 objdump -p target/release/super_cool_app
