@@ -26,8 +26,6 @@ If you have an SD card with stuff on it, you can use the following commands to f
 Armbian - Download an image from https://www.armbian.com/orange-pi-zero-2/.
 
 Debian - Try [here](https://drive.google.com/drive/folders/1Xk7b1jOMg-rftowFLExynLg0CyuQ7kCM).
-If you can't, you're shit outta luck, try to find a place where you can get `debian bullseye server 3.0.6`.
-Debian is preferred because Armbian has some issues with Postgres.
 
 Use
 
