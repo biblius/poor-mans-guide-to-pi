@@ -24,6 +24,8 @@ cargo build --release --target=aarch64-unknown-linux-musl
 
 For the Orange PI Zero 2, you'll be selecting an `aarch64-unknown-linux` target, but which one will depend on the OS on the pie. [The crab compiler links libraries dynamically by default](https://doc.rust-lang.org/reference/linkage.html#static-and-dynamic-c-runtimes) so you're going to need to investigate whether your pie has them (or just compile statically). When you compile the binary, you can inspect its headers by using
 
+## Check for dependencies
+
 ```bash
 objdump -p target/release/super_cool_app
 ```
@@ -108,19 +110,35 @@ You can check out [all the linkers cargo supports](https://doc.rust-lang.org/rus
 ```toml
 [target.aarch64-unknown-linux-gnu]
 linker = "aarch64-linux-gnu-gcc"
-rustflags = [
-    "-Ctarget-cpu=x86-64",
-]
+
+# The following can be added if you want to statically compile
+# rustflags = [ 
+#     "-Ctarget-feature=+crt-static",
+# ]
 
 [target.aarch64-unknown-linux-musl]
 linker = "aarch64-linux-gnu-gcc"
 ```
 
-You can now run the [two commands from the start](#adding-targets-to-the-toolchain). If you are getting an error that the compiler is not found and are on Linux like god intended you can install it with
+You can now run the [two commands from the start](#adding-targets-to-the-toolchain).
+
+## Libraries
+
+If you are getting an error that the compiler is not found and are on Linux like god intended you can install it with
 
 ```bash
 sudo apt install gcc-aarch64-linux-gnu
 ```
+
+When building for different architectures, libraries for those architectures must be present. The `target` arg will only point cargo to the compiler you want it to use, it will not point to the right libraries.
+The most notorious library you'll face issues with is OpenSSL. 
+
+For example, when compiling a project with `reqwest` as its dependency, it will constantly complain that it cannot find the headers/include directory for OpenSSL. There are 2 things I've found you can do about this:
+
+1. Enable the `native-tls-vendored` feature on reqwest, and
+2. Set the `PKG_CONFIG_SYSROOT_DIR` to the appropriate one
+
+Once you've ran the above command, it should've created a directory in `/usr/aarch64-linux-gnu`. This directory contains the necessary libraries to be used for `aarch64-unknown-linux-gnu` and should be set as the sysroot during compilation.
 
 Now everything should compile and should live happily ever after.
 
