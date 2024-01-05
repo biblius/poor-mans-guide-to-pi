@@ -1,14 +1,20 @@
 # Vaultwarden Install
 
 This document provides scripts that can be utilised to easily set up a [Vaultwarden](https://github.com/dani-garcia/vaultwarden) instance directly on a linux machine (without docker).
-Additionally, it provides a guide for building and deploying a Vaultwarden instance. This document will primarily focus on the `aarch64` architecture, but the same principles apply for any.
 
-This guide assumes you are using linux for all steps.
+Additionally, it provides a guide that can be followed step by step for building and deploying a Vaultwarden instance. The guide assumes you already have an instance of a Pi you can connect to and assumes you are using linux.
+Parts of it are taken from [this guide](https://gist.github.com/avoidik/9f12ef4feae6ccf7a5801a520931c5d1) for which I am forever grateful.
 
-It consists of 4 (potentially) simple steps:
+We will primarily focus on the `aarch64` architecture, but the same principles apply for any.
+
+Tested on Orange Pi Zero2.
+
+The setup consists of 4 (potentially) simple steps:
+
 1. [Compiling the binary](#compiling-the-binary)
 2. [File infrastructure](#infrastructure)
 3. [Web Vault](#infrastructure)
+4. [TLS](#tls)
 
 ## Compiling the binary
 
@@ -35,34 +41,66 @@ rustflags = [
 ]
 ```
 
-This makes sure the compiler will use the new directory as the [sysroot](https://autotools.info/pkgconfig/cross-compiling.html) during compilation - it is the equivalent of setting `PKG_CONFIG_SYSROOT_DIR=/usr/lib/aarch64-linux-gnu`. Additionally,
-we are linking everything statically, which ensures the binary does not need any dependencies when it's run on the target system.
+This makes sure the compiler will use the new directory as the [sysroot](https://autotools.info/pkgconfig/cross-compiling.html) during compilation - it is the equivalent of setting `PKG_CONFIG_SYSROOT_DIR=/usr/lib/aarch64-linux-gnu` when running `cargo build`.
+Additionally, we are linking everything statically, which ensures the binary does not need any dependencies when it's run on the target system.
 
-Now we have to cross our fingers 
+We have the plumbing set up, time to clone
 
 ```bash
-# User config
-sudo addgroup --system vaultwarden
-sudo adduser --system --home /opt/vaultwarden --shell /usr/sbin/nologin --no-create-home --gecos 'vaultwarden' --ingroup vaultwarden --disabled-login --disabled-password vaultwarden
+git clone git@github.com:dani-garcia/vaultwarden.git
+cd vaultwarden
+```
 
-# Create directories
-mkdir -p /opt/vaultwarden/bin
-mkdir -p /opt/vaultwarden/data
+Now we have to cross our fingers and run
 
-# Permissions
-sudo chown -R vaultwarden:vaultwarden /opt/vaultwarden/
-sudo chown root:root /opt/vaultwarden/bin/vaultwarden
-sudo chmod +x /opt/vaultwarden/bin/vaultwarden
-sudo chown -R root:root /opt/vaultwarden/web-vault/
-sudo chmod +r /opt/vaultwarden/.env
+```bash
+cargo build -F sqlite -F vendored_openssl --target=aarch64-unknown-linux-gnu --release 
+```
 
-# Build binary
-cargo build -F sqlite -F vendored_openssl --target=armv7-unknown-linux-gnueabihf --release
+This builds the binary with sqlite as the database backend (adjust it accordingly) and more importantly uses the vendored feature of OpenSSL which
+makes sure it is statically compiled.
 
-# Web vault
-curl -fsSLO https://github.com/dani-garcia/bw_web_builds/releases/download/v2023.12.0/bw_web_v2023.12.0.tar.gz # check latest available version on https://github.com/dani-garcia/bw_web_builds/releases
+If all we see is green messages and then a "finished", it means we have successfully built vaultwarden! It's smooth sailing from here.
+
+## Infrastructure
+
+Time to switch to the pie.
+
+We assume we are root.
+
+Create necessary directories
+  
+```bash
+mkdir -p /opt/vaultwarden/bin /opt/vaultwarden/data
+```
+
+From the main machine, copy the binary to the pie (assuming we are in the directory where we built vaultwarden)
+
+```bash
+scp target/aarch64-unknown-linux-gnu/release/vaultwarden root@<PIE_IP>:/opt/vaultwarden/bin/vaultwarden
+```
+
+Back to the pie, download and unpack web vault (check latest available version [here](https://github.com/dani-garcia/bw_web_builds/releases))
+
+```bash
+curl -fsSLO https://github.com/dani-garcia/bw_web_builds/releases/download/v2023.12.0/bw_web_v2023.12.0.tar.gz 
 sudo tar -zxf bw_web_v2023.12.0.tar.gz -C /opt/vaultwarden/
 rm -f bw_web_v2023.12.0.tar.gz
+```
+Add the user and group
+
+```bash
+sudo addgroup --system vaultwarden
+sudo adduser --system --home /opt/vaultwarden --shell /usr/sbin/nologin --no-create-home --gecos 'vaultwarden' --ingroup vaultwarden --disabled-login --disabled-password vaultwarden
+```
+
+Assign the necessary permissions
+
+```bash
+sudo chown -R vaultwarden:vaultwarden /opt/vaultwarden/
+sudo chmod +x /opt/vaultwarden/bin/vaultwarden
+```
+
 
 # Create secure Admin Token
 echo -n "MySecretPassword" | argon2 "$(openssl rand -base64 32)" -e -id -k 65540 -t 3 -p 4
