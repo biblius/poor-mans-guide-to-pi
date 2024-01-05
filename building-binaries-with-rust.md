@@ -8,16 +8,18 @@ Let's imagine you need a simple CLI tool for your PI. You found no solution that
 
 For the crab compiler to be able to compile your code for a specific architecutre, it must be present in the toolchain. [You can find a list of available targets here](https://doc.rust-lang.org/nightly/rustc/platform-support.html). The esoteric targets are known as target triplets (even though they have 4 items!!!) and their format is always `architecture-vendor-os-abi`. Choosing which will depend on the machine in question and its OS.
 
-Adding the target is as simple as
+Adding targets is as simple as
 
 ```bash
 rustup target add aarch64-unknown-linux-musl
+
+rustup target add aarch64-unknown-linux-gnu
 ```
 
 To compile it for the target use
 
 ```bash
-cargo build --release --target=aarch64-unknown-linux-musl
+cargo build --release --target=aarch64-unknown-linux-gnu
 ```
 
 - Note: Before you do this, read until the end to set up the appropriate linker.
@@ -124,6 +126,8 @@ You can now run the [two commands from the start](#adding-targets-to-the-toolcha
 
 ## Libraries
 
+If you can get away with compiling with `musl`, go for it. That one requires the least amount of configuration.
+
 If you are getting an error that the compiler is not found and are on Linux like god intended you can install it with
 
 ```bash
@@ -138,7 +142,7 @@ For example, when compiling a project with `reqwest` as its dependency, it will 
 1. Enable the `native-tls-vendored` feature on reqwest, and
 2. Set the `PKG_CONFIG_SYSROOT_DIR` to the appropriate one
 
-Once you've ran the above command, it should've created a directory in `/usr/aarch64-linux-gnu`. This directory contains the necessary libraries to be used for `aarch64-unknown-linux-gnu` and should be set as the sysroot during compilation.
+Once you've ran the above command, it should've created a directory in `/usr/aarch64-linux-gnu`. This directory contains the necessary libraries to be used for `aarch64-unknown-linux-gnu` and should be set as the sysroot (via `PKG_CONFIG_SYSROOT_DIR`) during compilation.
 
 Now everything should compile and should live happily ever after.
 
