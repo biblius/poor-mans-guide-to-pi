@@ -1,6 +1,6 @@
 # Vaultwarden Install
 
-This document provides scripts that can be utilised to easily set up a [Vaultwarden](https://github.com/dani-garcia/vaultwarden) instance directly on a linux machine (without docker).
+This document provides scripts that can be utilised to easily set up a [Vaultwarden](https://github.com/dani-garcia/vaultwarden) instance with sqlite directly on a linux machine (without docker).
 
 Additionally, it provides a guide that can be followed step by step for building and deploying a Vaultwarden instance. The guide assumes you already have an instance of a Pi you can connect to and assumes you are using linux.
 Parts of it are taken from [this guide](https://gist.github.com/avoidik/9f12ef4feae6ccf7a5801a520931c5d1) for which I am forever grateful.
@@ -84,24 +84,91 @@ Back to the pie, download and unpack web vault (check latest available version [
 
 ```bash
 curl -fsSLO https://github.com/dani-garcia/bw_web_builds/releases/download/v2023.12.0/bw_web_v2023.12.0.tar.gz 
-sudo tar -zxf bw_web_v2023.12.0.tar.gz -C /opt/vaultwarden/
+tar -zxf bw_web_v2023.12.0.tar.gz -C /opt/vaultwarden/
 rm -f bw_web_v2023.12.0.tar.gz
 ```
+
+Create `/opt/vaultwarden/.env` (see more options [here](https://github.com/dani-garcia/vaultwarden/blob/main/.env.template) or in the admin panel)
+
+```.env
+DATA_FOLDER=/opt/vaultwarden/data/
+DATABASE_MAX_CONNS=10
+WEB_VAULT_FOLDER=/opt/vaultwarden/web-vault/
+WEB_VAULT_ENABLED=true
+ROCKET_ADDRESS=0.0.0.0
+ROCKET_PORT=6060
+WEBSOCKET_ENABLED=true
+WEBSOCKET_ADDRESS=<PIE_IP>
+WEBSOCKET_PORT=3012
+DOMAIN=https://<PIE_IP>:6060
+```
+
 Add the user and group
 
 ```bash
-sudo addgroup --system vaultwarden
-sudo adduser --system --home /opt/vaultwarden --shell /usr/sbin/nologin --no-create-home --gecos 'vaultwarden' --ingroup vaultwarden --disabled-login --disabled-password vaultwarden
+addgroup --system vaultwarden
+adduser --system --home /opt/vaultwarden --shell /usr/sbin/nologin --no-create-home --gecos 'vaultwarden' --ingroup vaultwarden --disabled-login --disabled-password vaultwarden
 ```
 
 Assign the necessary permissions
 
 ```bash
-sudo chown -R vaultwarden:vaultwarden /opt/vaultwarden/
-sudo chmod +x /opt/vaultwarden/bin/vaultwarden
+chown -R vaultwarden:vaultwarden /opt/vaultwarden/
+chmod +x /opt/vaultwarden/bin/vaultwarden
 ```
 
+Create a systemd service in `/etc/systemd/system/vaultwarden.service`
+
+```service
+[Unit]
+Description=Vaultwarden Server
+Documentation=https://github.com/dani-garcia/vaultwarden
+After=network.target
+
+[Service]
+User=vaultwarden
+Group=vaultwarden
+EnvironmentFile=-/opt/vaultwarden/.env
+ExecStart=/opt/vaultwarden/bin/vaultwarden
+LimitNOFILE=65535
+LimitNPROC=4096
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+DevicePolicy=closed
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+MemoryDenyWriteExecute=yes
+LockPersonality=yes
+WorkingDirectory=/opt/vaultwarden
+ReadWriteDirectories=/opt/vaultwarden/data
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable systemd service
+
+```bash
+systemctl daemon-reload
+systemctl enable vaultwarden.service
+systemctl start vaultwarden.service
+systemctl status vaultwarden.service
+```
+
+If it failed, check with
+
+```bash
+journalctl -xeu vaultwarden.service
+```
+
+If the rocket has launched we're good to go! Head on over to `<PIE_IP>:<VW_PORT>/admin`.
 
 # Create secure Admin Token
+TODO: make the script read this from a user
 echo -n "MySecretPassword" | argon2 "$(openssl rand -base64 32)" -e -id -k 65540 -t 3 -p 4
-```
