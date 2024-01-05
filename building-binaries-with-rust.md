@@ -109,10 +109,12 @@ For the latter, you can use `aarch64-unknown-linux-musl` as the target since tha
 
 You can check out [all the linkers cargo supports](https://doc.rust-lang.org/rustc/codegen-options/index.html#linker), but for the pie you'll be using `aarch64-linux-gnu-gcc`. We tell which linker the crab compiler will use for which target in the `~/.cargo/config.toml` file (create one if it doesn't exist). The contents should be
 
-```toml
+```toml 
+[target.x86_64-unknown-linux-gnu]
+linker = "x86_64-linux-gnu-gcc"
+
 [target.aarch64-unknown-linux-gnu]
 linker = "aarch64-linux-gnu-gcc"
-
 # The following can be added if you want to statically compile
 # rustflags = [ 
 #     "-Ctarget-feature=+crt-static",
