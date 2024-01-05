@@ -90,6 +90,7 @@ rm -f bw_web_v2023.12.0.tar.gz
 
 Create `/opt/vaultwarden/.env` (see more options [here](https://github.com/dani-garcia/vaultwarden/blob/main/.env.template) or in the admin panel)
 
+TODO add admin token
 ```.env
 DATA_FOLDER=/opt/vaultwarden/data/
 DATABASE_MAX_CONNS=10
