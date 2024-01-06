@@ -9,13 +9,6 @@ We will primarily focus on the `aarch64` architecture, but the same principles a
 
 Tested on Orange Pi Zero2.
 
-The setup consists of 4 (potentially) simple steps:
-
-1. [Compiling the binary](#compiling-the-binary)
-2. [File infrastructure](#infrastructure)
-3. [Web Vault](#infrastructure)
-4. [TLS](#tls)
-
 ## Compiling the binary
 
 We'll be compiling the binary on our main machine, for which we will need [rust. 🦀](https://www.rust-lang.org/tools/install)
